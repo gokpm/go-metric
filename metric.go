@@ -3,6 +3,7 @@ package metric
 import (
 	"context"
 	"os"
+	"time"
 
 	ometric "go.opentelemetry.io/otel/metric"
 
@@ -12,6 +13,9 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 )
 
+var ok bool
+var provider *metric.MeterProvider
+
 type Config struct {
 	Ok          bool
 	Name        string
@@ -20,7 +24,8 @@ type Config struct {
 }
 
 func Setup(ctx context.Context, config *Config) (ometric.Meter, error) {
-	if !config.Ok {
+	ok = config.Ok
+	if !ok {
 		return nil, nil
 	}
 	httpOpts := []otlpmetrichttp.Option{
@@ -51,5 +56,19 @@ func Setup(ctx context.Context, config *Config) (ometric.Meter, error) {
 		metric.WithReader(reader),
 		metric.WithResource(mergedResource),
 	}
-	return metric.NewMeterProvider(providerOpts...).Meter(config.Name), nil
+	provider = metric.NewMeterProvider(providerOpts...)
+	return provider.Meter(config.Name), nil
+}
+
+func Shutdown(timeout time.Duration) error {
+	if !ok {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel()
+	err := provider.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
