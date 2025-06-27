@@ -13,12 +13,16 @@ import (
 )
 
 type Config struct {
+	Ok          bool
 	Name        string
 	Environment string
 	URL         string
 }
 
 func Setup(ctx context.Context, config *Config) (ometric.Meter, error) {
+	if !config.Ok {
+		return nil, nil
+	}
 	httpOpts := []otlpmetrichttp.Option{
 		otlpmetrichttp.WithEndpointURL(config.URL),
 		otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
