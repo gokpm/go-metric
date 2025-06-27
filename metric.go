@@ -16,7 +16,7 @@ type Config struct {
 	URL         string
 }
 
-func Init(ctx context.Context, config *Config) error {
+func Setup(ctx context.Context, config *Config) error {
 	httpOpts := []otlpmetrichttp.Option{
 		otlpmetrichttp.WithEndpointURL(config.URL),
 		otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
