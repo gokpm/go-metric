@@ -21,9 +21,10 @@ type Config struct {
 	Name        string
 	Environment string
 	URL         string
+	DialTimeout time.Duration
 }
 
-func Setup(ctx context.Context, config *Config) (ometric.Meter, error) {
+func Setup(config *Config) (ometric.Meter, error) {
 	ok = config.Ok
 	if !ok {
 		return nil, nil
@@ -32,6 +33,8 @@ func Setup(ctx context.Context, config *Config) (ometric.Meter, error) {
 		otlpmetrichttp.WithEndpointURL(config.URL),
 		otlpmetrichttp.WithCompression(otlpmetrichttp.GzipCompression),
 	}
+	ctx, cancel := context.WithTimeout(context.TODO(), config.DialTimeout)
+	defer cancel()
 	exporter, err := otlpmetrichttp.New(ctx, httpOpts...)
 	if err != nil {
 		return nil, err
