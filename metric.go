@@ -63,12 +63,10 @@ func Setup(config *Config) (ometric.Meter, error) {
 	return provider.Meter(config.Name), nil
 }
 
-func Shutdown(timeout time.Duration) error {
+func Shutdown(ctx context.Context) error {
 	if !ok {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
-	defer cancel()
 	err := provider.ForceFlush(ctx)
 	if err != nil {
 		return err
